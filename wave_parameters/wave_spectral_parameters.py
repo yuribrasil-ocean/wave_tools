@@ -3,13 +3,13 @@
 """
 Created on Tue May 16 13:05:39 2023
 
-Script/Function: spec_parameters.py
+Script/Function: wave_spectral_parameters.py
 
 Author: Yuri Brasil
 
 e-mail: yuri.brasil@oceanica.ufrj.br
 
-Modification: June 6th 2023
+Modification: May 2, 2025
 
 Objective: Calculate average parameters such as significant wave height 
            (Hs or SWH), mean wave period (mean frequency and mean wavelegth) 
@@ -123,7 +123,6 @@ def spec_orientation(freq_vec, dir_vec, spec):
     return spec2d
 
 ########################### AVERAGE PARAMETERS ################################
-
 
 ############## Calculating the Significant Wave Height (Hs) ###################
 
