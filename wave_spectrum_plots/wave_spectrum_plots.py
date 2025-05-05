@@ -12,7 +12,7 @@ Created on Saturday September 5th 2020
 
 # e-mail: yuri.brasil@oceanica.ufrj.br
 
-# Modification: May 2, 2025
+# Modification: May 5, 2025
 
 # Objective: Plot different forms of wave density spectrum (f,theta)
 
