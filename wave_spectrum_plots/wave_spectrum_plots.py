@@ -51,8 +51,9 @@ mpl.rcParams['savefig.format'] = 'png'
 
 ################## Omnidirectional Wave Spectrum Plot #########################
 
-def omnidirectional_spec(dir_vec, freq_vec, my_spec, param_dict, fname, my_cmap, 
-                         norm_flag, peak_flag, param_flag, vec_flag, fig_title):
+def omnidirectional_spec(dir_vec, freq_vec, my_spec, param_dict, fname, my_color, 
+                         norm_flag, peak_flag, param_flag, vec_flag, fig_title,
+                         tick_size):
 
 ############################ Adjusting parameters #############################
 
@@ -75,9 +76,16 @@ def omnidirectional_spec(dir_vec, freq_vec, my_spec, param_dict, fname, my_cmap,
     step_lookup = {1: 0.1, 2: 0.2, 5: 0.5, 10: 1, 20: 2, 50: 5}
     step = next((v for k, v in step_lookup.items() if my_max <= k), 20)
 
-    # Creating the ticks and tick labels
+    # Create the ticks
     y_ticks = np.arange(0, my_max + step, step)
     y_ticks = np.round(y_ticks, 1) if step < 1 else y_ticks 
+    
+    # Create the tick labels
+    y_tick_labels = []
+    for tick in y_ticks:
+        y_tick_labels.append(str(tick))
+    
+    y_tick_labels[0] = ''
     
     # Creating the unity string    
     if vec_flag == 'freq':
@@ -95,11 +103,11 @@ def omnidirectional_spec(dir_vec, freq_vec, my_spec, param_dict, fname, my_cmap,
     fig, ax = plt.subplots()           
     
     # Plotting the lines
-    plt.plot(freq_vec, my_spec, color='royalblue',
+    plt.plot(freq_vec, my_spec, color=my_color,
                 linewidth=0.8, zorder=20)
     
     # Filling the plot with color
-    plt.fill_between(freq_vec, my_spec, color='royalblue',
+    plt.fill_between(freq_vec, my_spec, color=my_color,
                      alpha=0.6, zorder=15)
     
     # Plotting the peak vertical line
@@ -122,14 +130,12 @@ def omnidirectional_spec(dir_vec, freq_vec, my_spec, param_dict, fname, my_cmap,
     
     # Preparing the vec_ticks (frequency and period)
     freq_ticks = np.arange(0.0,0.5,0.05)
+       
+    # Frequency tick labels    
+    freq_tick_labels = [f'{np.round(i, 2)}Hz' for i in freq_ticks]     
     
-    freq_tick_labels = []
-    for i in freq_ticks:
-        freq_tick_labels.append(str(np.round(i,2))+'Hz')
-        
-    period_tick_labels = []
-    for i in freq_ticks:
-        period_tick_labels.append(str(np.round(1/i,1))+'s')
+    # Period tick labels    
+    period_tick_labels = ['inf' if i == 0 else f'{np.round(1/i, 1)}s' for i in freq_ticks]
 
 ######################## Adjusting ticks and labels ###########################
 
@@ -145,12 +151,12 @@ def omnidirectional_spec(dir_vec, freq_vec, my_spec, param_dict, fname, my_cmap,
     ax.set_xticks(freq_ticks)
     ax.set_yticks(y_ticks)        
     ax.set_xticklabels(x_tick_labels, rotation=0, fontsize=9)
-    ax.set_yticklabels(y_ticks, rotation=0, fontsize=9)
+    ax.set_yticklabels(y_tick_labels, rotation=0, fontsize=9)
     
     # Setting the parameters of labels
     plt.xlim([freq_vec[0], freq_vec[-1]]) 
     plt.ylim([0, my_max+step])
-    plt.tick_params(length=0)
+    plt.tick_params(length=tick_size)
     
     # Adding grid
     ax.grid(which='major', color='black', alpha=0.2, linestyle='dotted')
@@ -312,10 +318,14 @@ def polar_spec(dir_vec, freq_vec, spec2d, param_dict, fname, ftick, my_cmap,
     # style of gridlines
     ax.tick_params(labelsize=8)
     gkws = dict(linestyle='--', color='.6', lw=.5)  # zorder does not work
-    ax.grid(axis='x', **gkws)  # theta gridlines
-    ls = ax.get_ygridlines()  # freq gridlines
-    plt.setp(ls[1::2], **gkws)  # -
-    plt.setp(ls[0::2], dashes=[2, 2], **gkws)  # --
+    
+    # Direction gridlines
+    ax.grid(axis='x', **gkws) 
+    
+    # Frequency gridlines
+    ls = ax.get_ygridlines()
+    plt.setp(ls[1::2], **gkws)
+    plt.setp(ls[0::2], dashes=[2, 2], **gkws)
 
 ############################# Colorbar and title ##############################
 
@@ -324,9 +334,11 @@ def polar_spec(dir_vec, freq_vec, spec2d, param_dict, fname, ftick, my_cmap,
     
     if my_max == cbar_ticks[-1]:
         cbar.ax.set_yticklabels(cbar_ticks)
-        
+    
+    # Colorbar size
     cbar.ax.tick_params(labelsize=10)
     
+    # Colorbar title unit
     if vec_flag == 'freq':
         title_unity = r'$(\mathbf{m^2 \hspace{0.2} Hz^{-1} \hspace{0.2} degree^{-1}})$'
     elif vec_flag == 'per':
@@ -371,7 +383,8 @@ def polar_spec(dir_vec, freq_vec, spec2d, param_dict, fname, ftick, my_cmap,
 ##################### Cartesian Wave Spectrum Plot ############################  
 
 def cartesian_spec(dir_vec, freq_vec, spec2d, param_dict, fname, my_cmap, 
-                   norm_flag, peak_flag, param_flag, vec_flag, fig_title): 
+                   norm_flag, peak_flag, param_flag, vec_flag, fig_title,
+                   tick_size): 
 
 ############################ Adjusting parameters #############################
     
@@ -382,38 +395,42 @@ def cartesian_spec(dir_vec, freq_vec, spec2d, param_dict, fname, my_cmap,
     spec2d_full = np.vstack((spec2d,spec2d[0,:]))
     dir_vec_full = np.hstack((dir_vec,360)) 
 
+    # Normalize the spectrum
     if norm_flag == True:
         spec2d_full = spec2d_full/np.max(spec2d_full)
         
 ###################### Creating ticks and tick labels #########################
 
-    # Preparing the dir_step lookup table
-    dir_step_lookup = {(25, 73): 2, (73, 200): 3, (200, 500): 10, (500, 800): 20}
+    # # Preparing the dir_step lookup table
+    # # Define step based on my_max
+    # dir_step_lookup = {25: 2, 73: 3, 200: 12, 500: 20, 800: 30}
+    # dir_step = next((v for k, v in dir_step_lookup.items() if len(dir_vec_full) <= k), 40)
     
-    # Creating the dir_step
-    dir_step = next((v for (start, end), v in dir_step_lookup.items() if start < len(dir_vec_full) <= end), 50)
+    # # # Preparing the dir_tick_labels
+    # # dir_tick_labels = [' ']*len(dir_vec_full)
+    
+    # # for d in range(dir_step,len(dir_vec_full),dir_step):
+    # #     if len(dir_vec_full) <= 361:
+    # #         dir_tick_labels[d] = str(int(dir_vec_full[d])) + '°'
+    # #     else:
+    # #         # dir_tick_labels[d] = str(np.round(dir_vec_full[d],1)) + '°' 
+    # #         dir_tick_labels[d] = str(int(dir_vec_full[d])) + '°' 
+    
+    # Create the dir_ticks
+    dir_ticks = np.arange(0,360+15,15)
 
-    # Preparing the dir_tick_labels
-    dir_tick_labels = [' ']*len(dir_vec_full)
-    
-    for d in range(dir_step,len(dir_vec_full),dir_step):
-        if len(dir_vec_full) <= 361:
-            dir_tick_labels[d] = str(int(dir_vec_full[d])) + '°'
-        else:
-            dir_tick_labels[d] = str(np.round(dir_vec_full[d],1)) + '°'    
+    dir_tick_labels = [' ']*len(dir_ticks)
+    for d in range(2,len(dir_ticks),2):
+        dir_tick_labels[d] = f'{int(dir_ticks[d])}°'    
     
     # Preparing the vec_ticks
-    freq_ticks = np.arange(0.0,0.5,0.05)
+    freq_ticks = np.arange(0.0,0.5,0.05)    
+
+    # Frequency tick labels    
+    freq_tick_labels = [f'{np.round(i, 2)}Hz' for i in freq_ticks]     
     
-    freq_tick_labels = []
-    for i in freq_ticks:
-        freq_tick_labels.append(str(np.round(i,2))+'Hz')
-        
-    period_tick_labels = []
-    for i in freq_ticks:
-        period_tick_labels.append(str(np.round(1/i,1))+'s')
-    
-    period_tick_labels[0] = ' '
+    # Period tick labels    
+    period_tick_labels = ['inf' if i == 0 else f'{np.round(1/i, 1)}s' for i in freq_ticks]
 
 ###############################################################################
 
@@ -461,22 +478,22 @@ def cartesian_spec(dir_vec, freq_vec, spec2d, param_dict, fname, my_cmap,
     my_levels = np.arange(step, my_max+step, step)   
     
     # Plotting the lines
-    plt.contour(freq_vec, dir_vec_full, spec2d_full, colors='k', levels=[first_level], alpha=0.8,
-                linewidths=0.2, zorder=20)
+    plt.contour(freq_vec, dir_vec_full, spec2d_full, colors='black', 
+                levels=[first_level], alpha=0.8, linewidths=0.2, zorder=20)
     
-    plt.contour(freq_vec, dir_vec_full, spec2d_full, colors='k', levels=my_levels, alpha=0.8,
-                linewidths=0.2, zorder=20)
+    plt.contour(freq_vec, dir_vec_full, spec2d_full, colors='black', 
+                levels=my_levels, alpha=0.8, linewidths=0.2, zorder=20)
 
     # Plotting the spectrum contourf
-    cnt1 = ax.contourf(freq_vec, dir_vec_full, spec2d_full, 
-                       cmap=my_cmap, levels=cmax_levels,
-                       alpha=0.95, zorder=15)
+    cnt1 = ax.contourf(freq_vec, dir_vec_full, spec2d_full, cmap=my_cmap, 
+                       levels=cmax_levels, alpha=0.95, zorder=15)
     
     # Plotting the maximum point
     if peak_flag == True:
         [max_y, max_x] = np.where(spec2d_full == np.max(spec2d_full))
         plt.scatter(freq_vec[max_x[0]], dir_vec_full[max_y[0]], s=40, 
                     color='white', marker='x', linewidths=1.2, zorder=30) 
+        
     # Plotting the parameters box
     if param_flag == True:
         plt.figtext(0.71, 0.78,                         
@@ -489,23 +506,25 @@ def cartesian_spec(dir_vec, freq_vec, spec2d, param_dict, fname, my_cmap,
         
     # Setting the ticks and ticklabels
     ax.set_xticks(freq_ticks)
-    ax.set_yticks(dir_vec_full)    
+    # ax.set_yticks(dir_vec_full)    
+    ax.set_yticks(dir_ticks)  
     ax.set_xticklabels(x_tick_labels, rotation=0, fontsize=10)
     ax.set_yticklabels(dir_tick_labels, rotation=0, fontsize=10)
     
     # Setting the parameters of labels
     plt.xlim([0, 0.5])    
-    plt.tick_params(length=0)
+    plt.tick_params(length=tick_size)
     
 ############################# Colorbar and title ##############################    
     
     # Setting the colorbar
-    # colorbar
     cbar = fig.colorbar(cnt1, ticks=cbar_ticks, pad=0.02)
     
+    # Stablish the colorbar tick labels to be equal to the ticks
     if my_max == cbar_ticks[-1]:
         cbar.ax.set_yticklabels(cbar_ticks)
-        
+    
+    # Adjust the colorbar ticks size    
     cbar.ax.tick_params(labelsize=10)
         
     if vec_flag == 'freq':
@@ -536,8 +555,8 @@ def cartesian_spec(dir_vec, freq_vec, spec2d, param_dict, fname, my_cmap,
 
 ######################## Map Wave Spectrum Plot ################################     
 
-def map_spec(dir_vec, freq_vec, spec2d, param_dict, fname, my_cmap, 
-             norm_flag, peak_flag, param_flag, vec_flag, fig_title): 
+def map_spec(dir_vec, freq_vec, spec2d, param_dict, fname, my_cmap, norm_flag, 
+             peak_flag, param_flag, vec_flag, fig_title, tick_size): 
 
 ############################ Adjusting parameters #############################
     
@@ -551,35 +570,30 @@ def map_spec(dir_vec, freq_vec, spec2d, param_dict, fname, my_cmap,
         
 ###################### Creating ticks and tick labels #########################
 
-    # Preparing the dir_ticks
-    dir_ticks = dir_vec[::-1]
-
     # Preparing the dir_step lookup table
-    dir_step_lookup = {(24, 72): 2, (72, 200): 3, (200, 500): 10, (500, 800): 20}
-    
-    # Creating the dir_step
-    dir_step = next((v for (start, end), v in dir_step_lookup.items() if start < len(dir_ticks) <= end), 50)
+    # Define step based on my_max
+    dir_step_lookup = {24: 2, 72: 3, 200: 12, 500: 20, 800: 30}
+    dir_step = next((v for k, v in dir_step_lookup.items() if len(dir_vec) <= k), 40)
 
     # Preparing the dir_tick_labels
-    dir_tick_labels = [' ']*len(dir_ticks)
+    dir_tick_labels = [' ']*len(dir_vec)
     
-    for d in range(1,len(dir_ticks),dir_step):
-        if len(dir_ticks) <= 360:
-            dir_tick_labels[d] = str(int(dir_ticks[d])) + '°'
+    for d in range(dir_step,len(dir_vec),dir_step):
+        if len(dir_vec) <= 360:
+            dir_tick_labels[d] = str(int(dir_vec[d])) + '°'
         else:
-            dir_tick_labels[d] = str(np.round(dir_ticks[d],1)) + '°'  
-    
-    # dir_tick_labels[0] = ' '
+            dir_tick_labels[d] = str(int(dir_vec[d])) + '°'   
+        
+    # Invert the dir_tick_labels order    
+    dir_tick_labels = dir_tick_labels[::-1]
     
     # Preparing the freq_tick_labels
-    freq_step_lookup = {(25, 70): 5, (73, 200): 10, 
-                        (200, 500): 20, (500, 1001): 80}
-
-    freq_step = next((v for (start, end), v in freq_step_lookup.items() if start < len(freq_vec) <= end), 2)
+    freq_step_lookup = {25: 2, 70: 5, 200: 20, 500: 50, 1001: 100}
+    freq_step = next((f for g, f in freq_step_lookup.items() if len(freq_vec) <= g), 200)    
     
     # Adjusting linewidth based on frequency step
-    my_linewidth = {5: 0.7, 10: 0.5, 20: 0.2, 80: 0.1}.get(freq_step, 1)
-    
+    # my_linewidth = {5: 0.7, 10: 0.5, 20: 0.2, 80: 0.1}.get(freq_step, 1)    
+    my_linewidth = {5: 0.7, 10: 0.5, 20: 0.2, 80: 0.1, 200:0.001}.get(freq_step, 1) 
 
 ###############################################################################
 
@@ -677,12 +691,13 @@ def map_spec(dir_vec, freq_vec, spec2d, param_dict, fname, my_cmap,
     # Setting the ticks and ticklabels
     ax.set_xticks(np.arange(len(freq_vec)))
     ax.set_yticks(np.arange(len(dir_vec)))
+    
        
     ax.set_xticklabels(x_tick_labels, rotation=0, fontsize=8)
     ax.set_yticklabels(dir_tick_labels, rotation=0, fontsize=10)
     
     # Setting the parameters of labels
-    plt.tick_params(length=0)
+    plt.tick_params(length=tick_size)
     
 ################################ Colorbar #####################################    
     
