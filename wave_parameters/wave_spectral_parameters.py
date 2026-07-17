@@ -24,8 +24,6 @@ Objective: Calculate average parameters such as significant wave height
            
 References: 
 
-df:
-    
 Hs:
                 
 .SWAN Group (2022) SWAN User Manual - SWAN Cycle III version 41.45 (pp. 105)
@@ -129,7 +127,7 @@ def d_logarithmic(spec_vector):
 
     return d_vec
 
-########### Correct spectrum orientation (if needed) and nans #################
+########### Correct spectrum orientation (if needed) and NaNs #################
 
 def check_spec(dir_vec, freq_vec, spec):    
     
@@ -137,8 +135,15 @@ def check_spec(dir_vec, freq_vec, spec):
     Checks the integrity and orientation of a directional spectrum.
 
     The function replaces NaN values by zeros, verifies whether the spectrum 
-    is empty, and ensures that its dimensions follow the convention E(θ,f) or
-    E(θ,k).
+    is Null, either filed with NaNs or zeros, and ensures that its dimensions 
+    follow the convention E(θ,f) or E(θ,k).
+    
+    Notes
+    -----
+    NaN values are replaced by zeros. If the input spectrum contains
+    only NaN values or only zero values, a warning message is printed
+    and a zero spectrum is returned. The function then continues with
+    the orientation check.
 
     Parameters
     ----------
@@ -158,13 +163,23 @@ def check_spec(dir_vec, freq_vec, spec):
     ValueError: If the spectrum is empty or its dimensions are inconsistent.
     
     """
+
+    # Check if the spectrum is entirely NaN
+    all_nan = np.all(np.isnan(spec))
     
-    # Handle null spectrum (all NaN or all zeros)
-    if np.all(np.isnan(spec)) or np.nanmax(spec) == 0:
-        raise ValueError("Spectrum is null (all NaN or all zeros).")        
+    # Replace NaN elements by zero
+    spec = np.nan_to_num(spec, nan=0.0)
     
-    # Replace nan elements by zero
-    spec = np.nan_to_num(spec, nan=0.0)      
+    # Check if the spectrum contains no positive energy
+    all_zero = np.max(spec) <= 0
+    
+    if all_zero:
+        if all_nan:
+            print("Warning [check_spec]: input spectrum contains only NaN values. "
+                  "Returning a zero spectrum.")
+        else:
+            print("Warning [check_spec]: input spectrum contains only zero values. "
+                  "Returning a zero spectrum.")
     
     # Check the spectrum orientation and, if necessary, correct the spectrum 
     # orientation that should be E(θ,f) or E(θ,k)
@@ -173,7 +188,8 @@ def check_spec(dir_vec, freq_vec, spec):
     elif spec.shape == (len(freq_vec),len(dir_vec)):
         spec2d = np.transpose(spec) 
     else:
-        raise ValueError("Input spectrum dimensions do not match frequency and direction vectors.")
+        raise ValueError("Input spectrum dimensions do not match \
+                         frequency and direction vectors.")
     
     return spec2d
    
