@@ -1,0 +1,81 @@
+Testing matrices:
+
+[1] - OK
+
+# Matfile parameters
+resolution = 512
+hs = 4
+lp = 500
+dp = 45
+
+[2] - OK
+
+# Matfile parameters
+resolution = 512
+hs = 2
+lp = 500
+dp = 45
+
+[3] - OK
+
+# Matfile parameters
+resolution = 512
+hs = 1
+lp = 500
+dp = 45
+
+[4] - OK
+
+# Matfile parameters
+resolution = 512
+hs = 2
+lp = 200
+dp = 0
+
+[5] - OK
+
+# Matfile parameters
+resolution = 512
+hs = 2
+lp = 200
+dp = 90
+
+[6] - OK
+
+# Matfile parameters
+resolution = 512
+hs = 4
+lp = 200
+dp = 45
+
+[7] - OK
+
+# Matfile parameters
+resolution = 512
+hs = 3
+lp = 300
+dp = 45
+
+[8] - OK
+
+# Matfile parameters
+resolution = 512
+hs = 3
+lp = 300
+dp = 90
+
+[9] - OK
+
+# Matfile parameters
+resolution = 512
+hs = 3
+lp = 300
+dp = 0
+
+[10] - OK
+
+# Matfile parameters
+resolution = 512
+hs = 4
+lp = 250
+dp = 0
