@@ -472,10 +472,6 @@ def peak_frequency(dir_vec, freq_vec, spec, two_dim_flag):
         # Checking the spectrum
         spec2d = check_spec(dir_vec, freq_vec, spec)
 
-         # Handle null spectrum (all NaN or all zeros)
-        if np.all(np.isnan(spec2d)) or np.nanmax(spec2d) == 0:
-            raise ValueError("Spectrum is null (all NaN or all zeros).")
-
         # Direction increment
         dtheta = np.deg2rad(dir_vec[1] - dir_vec[0])
 
@@ -486,10 +482,6 @@ def peak_frequency(dir_vec, freq_vec, spec, two_dim_flag):
 
         # 1D wave spectrum E(f)     
         spec1d_freq = np.asarray(spec)
-
-        # Handle null spectrum (all NaN or all zeros)
-        if np.all(np.isnan(spec1d_freq)) or np.nanmax(spec1d_freq) == 0:
-            raise ValueError("Spectrum is null (all NaN or all zeros).")
 
     # Locate discrete peak
     fp_idx = np.nanargmax(spec1d_freq)
